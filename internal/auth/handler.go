@@ -68,15 +68,6 @@ func LoginHandler(db *sql.DB) gin.HandlerFunc {
 			return
 		}
 
-		_, err = db.ExecContext(c.Request.Context(), `
-		UPDATE users SET is_online = true
-		WHERE email = $1`, req.Email)
-
-		if err != nil {
-			c.JSON(http.StatusUnauthorized, gin.H{"error": "Loggin failed!"})
-			return
-		}
-
 		c.JSON(http.StatusOK, gin.H{"message": "Login successful!"})
 	}
 }
