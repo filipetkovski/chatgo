@@ -60,6 +60,32 @@ func AcceptFriendRequest(db *sql.DB) gin.HandlerFunc {
 	}
 }
 
+func GetFriendRequests(db *sql.DB) gin.HandlerFunc {
+	return func(c *gin.Context) {
+		userID := c.GetString("user_id")
+
+		rows, err := db.QueryContext(c.Request.Context(), `
+		SELECT u.username FROM users u
+		JOIN friendships f ON (f.user_id = u.id)
+		WHERE f.friend_id = $1`, userID)
+
+		if err != nil {
+			c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+		}
+
+		defer rows.Close()
+
+		var requestedUsernames []string
+		for rows.Next() {
+			var username string
+			rows.Scan(&username)
+			requestedUsernames = append(requestedUsernames, username)
+		}
+
+		c.JSON(http.StatusOK, gin.H{"usernames": requestedUsernames})
+	}
+}
+
 func ActiveFriendsHandler(db *sql.DB) gin.HandlerFunc {
 	return func(c *gin.Context) {
 		userID := c.GetString("user_id")
@@ -77,6 +103,7 @@ func ActiveFriendsHandler(db *sql.DB) gin.HandlerFunc {
 			c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
 			return
 		}
+
 		defer rows.Close()
 
 		var friends []string

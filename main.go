@@ -21,6 +21,7 @@ func main() {
 	protected.POST("/friends/add", friendship.AddFriendHandler(database))
 	protected.POST("/friends/accept", friendship.AcceptFriendRequest(database))
 	protected.GET("/friends/active", friendship.ActiveFriendsHandler(database))
+	protected.GET("/friends/requests", friendship.GetFriendRequests(database))
 
 	r.Run(":8080")
 }
