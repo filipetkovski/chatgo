@@ -68,6 +68,16 @@ func LoginHandler(db *sql.DB) gin.HandlerFunc {
 			return
 		}
 
-		c.JSON(http.StatusOK, gin.H{"message": "Login successful!"})
+		var userID string
+		db.QueryRowContext(c.Request.Context(), `
+            SELECT id FROM users WHERE email = $1`, req.Email).Scan(&userID)
+
+		token, err := GenerateToken(userID)
+		if err != nil {
+			c.JSON(http.StatusInternalServerError, gin.H{"error": "Could not generate token"})
+			return
+		}
+
+		c.JSON(http.StatusCreated, gin.H{"Token": token})
 	}
 }
